@@ -1,54 +1,67 @@
 document.addEventListener('DOMContentLoaded', function(){
 
     fetchQuotes()
-    postQuote()
-    let quote = event.target.quote.value
-        // ^^ grabs user input, saves to variable
-        event.target.quote.value = ''
-        // ^^ clears the form itself, which users like
-    
-        let author = event.target.author.value
-        event.target.author.value = ''
-
-    const grabButton = document.getElementById("butao")
-    grabButton.addEventListener('submit', function (event) {
-        event.preventDefault()
-
-    
-    })
-
     
    
-function postQuote(quote, author){
-    // console.log(quote, author)
+
+  function fetchQuotes(){
+
+    fetch("http://localhost:3000/quotes?_embed=likes$")
+    .then(resp => resp.json())
+    .then(json => {
+        json.forEach( quote => listAllQuotes(quote))
+    })
+}
+
+const deleteQuote = (quote) => {
+    fetch(`http://localhost:3000/quotes/${quote.id}`, {
+      method: "DELETE",
+    })
+    
+  }
+  
+  
+
+    
+    const getBtn = document.getElementById("new-quote-form")
+    getBtn.addEventListener('submit', function (event) {
+     event.preventDefault()
+    
+    const quote = event.target.quote.value
+    event.target.quote.value = ""
+    const author = event.target.author.value
+    event.target.author.value = ""
+
+    const newQuote = {
+        quote: quote,
+        author:  author
+    }
+
+    postQuote(newQuote)
+              
+    })
+
+  function postQuote(quotes){
     fetch("http://localhost:3000/quotes?_embed=likes", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         },
-        body: JSON.stringify({"quote":quote, "author":author})
+        body: JSON.stringify(quotes)
+        
     })
     .then(resp => resp.json())
     .then(json => listAllQuotes(json))
-}
-
     
-
-
-function fetchQuotes(){
-
-    fetch("http://localhost:3000/quotes?_embed=likes")
-    .then(resp => resp.json())
-    .then(json => {
-        json.forEach(quote => listAllQuotes(quote))
-    })
-}
+ }
+   
 
 
 
 function listAllQuotes(quote){
 const getForm = document.getElementById("new-quote-form")
+// const newDiv = document.createElement('div')
 const newLi = document.createElement('li')
 const createBlock = document.createElement("BLOCKQUOTE")
 const createP = document.createElement('p')
@@ -78,6 +91,12 @@ newLi.appendChild(button1)
 newLi.appendChild(button2)
 getForm.appendChild(newLi)
 
+//  const deleteButton = document.querySelector(".btn-danger")
+
+ button2.addEventListener("click", () => {
+    deleteQuote(quote);
+    newLi.remove();
+  });
 }
 
 })
